@@ -27,6 +27,37 @@ class Fetcher {
     this.#queue = new Queue({ concurrency })
   }
 
+  async #fetchWithRetry(
+    url: string,
+    init: RequestInit,
+    maxRetries = 3
+  ): Promise<Response> {
+    const retryDelay = this.options.retryDelay ?? 30000
+    let lastError: Response | undefined
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      const res = await (this.options.fetch || fetch)(url, init)
+
+      if (res.status !== 429) {
+        return res
+      }
+
+      lastError = res
+      const isLastAttempt = attempt === maxRetries - 1
+
+      if (!isLastAttempt) {
+        logger.warn(
+          `Rate limited on ${url}, waiting ${retryDelay / 1000}s before retry (${
+            attempt + 1
+          }/${maxRetries})...`
+        )
+        await new Promise((r) => setTimeout(r, retryDelay))
+      }
+    }
+
+    return lastError!
+  }
+
   #limitReached() {
     return this.options.limit && this.#pages.size >= this.options.limit
   }
@@ -78,9 +109,17 @@ class Fetcher {
       return
     }
 
+    // return if excluded
+    if (
+      this.options.exclude &&
+      matchPath(pathname, this.options.exclude)
+    ) {
+      return
+    }
+
     logger.info(`Fetching ${c.green(url)}`)
 
-    const res = await (this.options.fetch || fetch)(url, {
+    const res = await this.#fetchWithRetry(url, {
       headers: {
         "user-agent": "Sitefetch (https://github.com/egoist/sitefetch)",
       },

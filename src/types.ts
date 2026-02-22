@@ -21,6 +21,16 @@ export type Options = {
   limit?: number
 
   /**
+   * Delay in ms before retrying on rate limit (429). Default: 30000
+   */
+  retryDelay?: number
+
+  /**
+   * Exclude paths matching these patterns (micromatch)
+   */
+  exclude?: string[]
+
+  /**
    * A custom function to fetch URL
    */
   fetch?: (url: string, init: RequestInit) => Promise<Response>

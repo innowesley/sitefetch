@@ -15,6 +15,16 @@ cli
   .option("--concurrency <number>", "Number of concurrent requests", {
     default: 3,
   })
+  .option(
+    "--retry-delay <ms>",
+    "Delay in ms before retrying on rate limit (default: 30000)",
+    {
+      default: 30000,
+    }
+  )
+  .option("-e, --exclude <pattern>", "Exclude matching paths", {
+    array: true,
+  })
   .option("-m, --match <pattern>", "Only fetch matched pages")
   .option("--content-selector <selector>", "The CSS selector to find content")
   .option("--limit <limit>", "Limit the result to this amount of pages")
@@ -31,7 +41,9 @@ cli
 
     const pages = await fetchSite(url, {
       concurrency: flags.concurrency,
+      retryDelay: flags.retryDelay,
       match: flags.match && ensureArray(flags.match),
+      exclude: flags.exclude && ensureArray(flags.exclude),
       contentSelector: flags.contentSelector,
       limit: flags.limit,
     })
