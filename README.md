@@ -22,6 +22,28 @@ npm i -g sitefetch
 pnpm i -g sitefetch
 ```
 
+## Development
+
+To develop locally and test changes:
+
+```bash
+# Build the project
+npm run build
+
+# Link locally for global CLI
+sudo npm link
+
+# After making changes, rebuild and relink
+npm run build && sudo npm link
+```
+
+To use the published version instead:
+
+```bash
+sudo npm uninstall -g sitefetch
+sudo npm i -g sitefetch
+```
+
 ## Usage
 
 ```bash

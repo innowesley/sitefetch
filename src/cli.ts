@@ -10,14 +10,15 @@ import { version } from "../package.json"
 const cli = cac("sitefetch")
 
 cli
-  .command("[url]", "Fetch a site")
-  .option("-o, --outfile <path>", "Write the fetched site to a text file")
+  .command("<url>", "Fetch a site and save as text")
+  .allowUnknownOptions(true)
+  .option("-o, --outfile <path>", "Save output to a file instead of printing to stdout")
   .option("--concurrency <number>", "Number of concurrent requests", {
     default: 3,
   })
   .option(
     "--retry-delay <ms>",
-    "Delay in ms before retrying on rate limit (default: 30000)",
+    "Delay in ms before retrying on rate limit",
     {
       default: 30000,
     }
@@ -25,10 +26,18 @@ cli
   .option("-e, --exclude <pattern>", "Exclude matching paths", {
     array: true,
   })
-  .option("-m, --match <pattern>", "Only fetch matched pages")
-  .option("--content-selector <selector>", "The CSS selector to find content")
-  .option("--limit <limit>", "Limit the result to this amount of pages")
-  .option("--silent", "Do not print any logs")
+  .option("-m, --match <pattern>", "Only fetch pages matching the pattern")
+  .option("--content-selector <selector>", "CSS selector to extract main content (e.g. 'article', '.post', 'main')")
+  .option("--limit <number>", "Maximum number of pages to fetch")
+  .option("--silent", "Suppress logs and progress output")
+  .example("sitefetch https://example.com")
+  .example("sitefetch https://example.com -o output.txt")
+  .example("sitefetch https://example.com --limit 10")
+  .example("sitefetch https://example.com --match /blog/**")
+  .example("sitefetch https://example.com --exclude **/api/**")
+  .example("sitefetch https://example.com --content-selector article")
+  .example("sitefetch https://example.com --concurrency 5")
+  .example("sitefetch https://example.com --silent")
   .action(async (url, flags) => {
     if (!url) {
       cli.outputHelp()
