@@ -34,6 +34,11 @@ export type Options = {
    * A custom function to fetch URL
    */
   fetch?: (url: string, init: RequestInit) => Promise<Response>
+
+  /**
+   * Dry run: collect URLs without fetching content
+   */
+  dryRun?: boolean
 }
 
 export type Page = {

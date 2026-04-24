@@ -180,6 +180,16 @@ class Fetcher {
       }
     }
 
+    // In dry-run mode, just record the URL and return without fetching content
+    if (this.options.dryRun) {
+      this.#pages.set(pathname, {
+        title: pathname,
+        url,
+        content: "",
+      })
+      return
+    }
+
     const window = new Window({
       url,
       settings: {
