@@ -31,31 +31,43 @@ class Fetcher {
     url: string,
     init: RequestInit,
     maxRetries = 3
-  ): Promise<Response> {
+  ): Promise<Response | undefined> {
     const retryDelay = this.options.retryDelay ?? 30000
-    let lastError: Response | undefined
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
-      const res = await (this.options.fetch || fetch)(url, init)
+      try {
+        const res = await (this.options.fetch || fetch)(url, init)
 
-      if (res.status !== 429) {
+        if (res.status === 429) {
+          const isLastAttempt = attempt === maxRetries - 1
+
+          if (!isLastAttempt) {
+            logger.warn(
+              `Rate limited on ${url}, waiting ${retryDelay / 1000}s before retry (${
+                attempt + 1
+              }/${maxRetries})...`
+            )
+            await new Promise((r) => setTimeout(r, retryDelay))
+          }
+          continue
+        }
+
         return res
-      }
+      } catch (error) {
+        const isLastAttempt = attempt === maxRetries - 1
 
-      lastError = res
-      const isLastAttempt = attempt === maxRetries - 1
-
-      if (!isLastAttempt) {
-        logger.warn(
-          `Rate limited on ${url}, waiting ${retryDelay / 1000}s before retry (${
-            attempt + 1
-          }/${maxRetries})...`
-        )
-        await new Promise((r) => setTimeout(r, retryDelay))
+        if (!isLastAttempt) {
+          logger.warn(
+            `Network error fetching ${url}, retrying in ${retryDelay / 1000}s (${
+              attempt + 1
+            }/${maxRetries})...`
+          )
+          await new Promise((r) => setTimeout(r, retryDelay))
+        } else {
+          logger.warn(`Failed to fetch ${url}: ${(error as Error).message}`)
+        }
       }
     }
-
-    return lastError!
   }
 
   #limitReached() {
@@ -123,7 +135,14 @@ class Fetcher {
       headers: {
         "user-agent": "Sitefetch (https://github.com/egoist/sitefetch)",
       },
+    }).catch((error) => {
+      logger.warn(`Failed to fetch ${url}: ${(error as Error).message}`)
+      return undefined
     })
+
+    if (!res) {
+      return
+    }
 
     if (!res.ok) {
       logger.warn(`Failed to fetch ${url}: ${res.statusText}`)

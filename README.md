@@ -27,21 +27,23 @@ pnpm i -g sitefetch
 To develop locally and test changes:
 
 ```bash
-# Build the project
-npm run build
+# Build + install globally (user-local, no sudo)
+npm run dev:install
+```
 
-# Link locally for global CLI
-sudo npm link
+This installs to `~/.local/bin/sitefetch`. Make sure `~/.local/bin` is in your `PATH`.
 
-# After making changes, rebuild and relink
-npm run build && sudo npm link
+After making changes, rebuild and reinstall with the same command:
+
+```bash
+npm run dev:install
 ```
 
 To use the published version instead:
 
 ```bash
-sudo npm uninstall -g sitefetch
-sudo npm i -g sitefetch
+npm uninstall -g sitefetch
+npm i -g sitefetch
 ```
 
 ## Usage

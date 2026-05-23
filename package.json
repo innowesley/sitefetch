@@ -12,6 +12,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rm -rf dist && rolldown -c",
+    "postbuild": "npm i -g --prefix ~/.local . 2>&1 | tail -1 && chmod +x ~/.local/bin/sitefetch 2>/dev/null; hash -r 2>/dev/null; command -v sitefetch >/dev/null 2>&1 || echo 'Run: hash -r'",
     "prepublishOnly": "bun run build"
   },
   "keywords": [],

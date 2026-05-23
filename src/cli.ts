@@ -23,7 +23,7 @@ function getDomainFilename(urlString: string): string {
 const cli = cac("sitefetch")
 
 cli
-  .command("<url>", "Fetch a site and save as text")
+  .command("[url]", "Fetch a site")
   .allowUnknownOptions(true)
   .option("-o, --outfile <path>", "Save output to a file instead of printing to stdout (default: <domain>.txt)")
   .option("--concurrency <number>", "Number of concurrent requests", {
@@ -119,7 +119,7 @@ cli
     } else {
       fs.mkdirSync(path.dirname(outPath) || ".", { recursive: true })
       fs.writeFileSync(outPath, output, "utf8")
-      logger.info(`Saved to ${path.basename(outPath)}`)
+      logger.info("done")
     }
   })
 
